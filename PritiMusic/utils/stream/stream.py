@@ -13,7 +13,6 @@ from PritiMusic.utils.exceptions import AssistantErr
 from PritiMusic.utils.inline import aq_markup, close_markup, stream_markup
 from PritiMusic.utils.stream.queue import put_queue, put_queue_index
 from PritiMusic.utils.pastebin import LuckyBin
-# Assuming your helper is imported from this module
 from PritiMusic.utils.thumbnails import get_thumb 
 
 # ✅ Helper to get Random Image safely
@@ -40,7 +39,8 @@ async def stream(
     if not result:
         return
     if forceplay:
-        await Lucky.force_stop_stream(chat_id)
+        # ✅ FIX: Changed 'force_stop_stream' to 'stop_stream'
+        await Lucky.stop_stream(chat_id)
 
     # ==========================================
     # PLAYLIST STREAM TYPE
@@ -81,7 +81,7 @@ async def stream(
                 except:
                     raise AssistantErr(_["play_14"])
                 
-                # ✅ FIX: Handle silent download failure (None file_path)
+                # ✅ FIX: Handle silent download failure
                 if not file_path or str(file_path) == "None":
                     raise AssistantErr(_["play_14"])
 
@@ -90,7 +90,7 @@ async def stream(
                     chat_id, original_chat_id, file_path if direct else f"vid_{vidid}", title, duration_min, user_name, vidid, user_id, "video" if video else "audio", forceplay=forceplay,
                 )
                 
-                # FIXED: Added required arguments
+                # ✅ FIXED: Missing thumbnail fallback
                 img = await get_thumb(vidid, user_id, app)
                 if not img: img = get_random_img(config.PLAYLIST_IMG_URL)
 
@@ -120,7 +120,7 @@ async def stream(
         except:
             raise AssistantErr(_["play_14"])
         
-        # ✅ FIX: Handle silent download failure (None file_path)
+        # ✅ FIX: Handle silent download failure
         if not file_path or str(file_path) == "None":
             raise AssistantErr(_["play_14"])
         
@@ -133,7 +133,7 @@ async def stream(
             await Lucky.join_call(chat_id, original_chat_id, file_path, video=status, image=thumbnail)
             await put_queue(chat_id, original_chat_id, file_path if direct else f"vid_{vidid}", title, duration_min, user_name, vidid, user_id, "video" if video else "audio", forceplay=forceplay)
             
-            # FIXED: Added required arguments
+            # ✅ FIXED: Missing thumbnail fallback
             img = await get_thumb(vidid, user_id, app)
             if not img: img = get_random_img(config.PLAYLIST_IMG_URL)
 
@@ -156,23 +156,17 @@ async def stream(
             if not forceplay: db[chat_id] = []
             n, file_path = await YouTube.video(link)
             
-            # ✅ FIX: Handle verification for both stream validation (n) and file path status
+            # ✅ FIX: Handle verification for both stream validation
             if n == 0 or not file_path or str(file_path) == "None": 
                 raise AssistantErr(_["str_3"])
                 
             await Lucky.join_call(chat_id, original_chat_id, file_path, video=status, image=thumbnail if thumbnail else None)
             await put_queue(chat_id, original_chat_id, f"live_{vidid}", title, duration_min, user_name, vidid, user_id, "video" if video else "audio", forceplay=forceplay)
             
-            # FIXED: Added required arguments
+            # ✅ FIXED: Missing thumbnail fallback
             img = await get_thumb(vidid, user_id, app)
             if not img: img = get_random_img(config.PLAYLIST_IMG_URL)
 
             run = await app.send_photo(original_chat_id, photo=img, caption=_["stream_1"].format(f"https://t.me/{app.username}?start=info_{vidid}", title[:23], duration_min, user_name), reply_markup=InlineKeyboardMarkup(stream_markup(_, chat_id)), has_spoiler=False)
             db[chat_id][0]["mystic"] = run
             db[chat_id][0]["markup"] = "tg"
-
-    # ==========================================
-    # OTHER STREAM TYPES (SOUNDCLOUD, TELEGRAM, INDEX, ETC.)
-    # ==========================================
-    # Append your remaining streamtype blocks (e.g., soundcloud, telegram) below this line 
-    # following the exact same `if not file_path or str(file_path) == "None":` structural fix.
