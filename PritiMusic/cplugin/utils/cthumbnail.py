@@ -85,3 +85,14 @@ async def create_song_image(image_path, lyrics):
     final.save(out)
 
     return out
+
+
+# =========================
+# 🛠️ ALIAS TO FIX IMPORT ERROR
+# =========================
+async def get_thumb(image_path, lyrics=""):
+    """
+    This acts as a bridge. When the bot asks for 'get_thumb', 
+    this function intercepts it and runs 'create_song_image' instead.
+    """
+    return await create_song_image(image_path, lyrics)
