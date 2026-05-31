@@ -10,7 +10,7 @@ buttons = InlineKeyboardMarkup(
             InlineKeyboardButton(text="▢", callback_data="end_cb"),
         ],
         [
-            InlineKeyboardButton(text="✯ CLONE NOW ✯", url="https://t.me/clone_MUSICrobot")
+            InlineKeyboardButton(text="❖ 𝐂ʟᴏηє 𝐍ᴏᴡ ❖", url="https://t.me/SizzuMusicBot")
         ],
     ]
 )
@@ -18,7 +18,7 @@ buttons = InlineKeyboardMarkup(
 close_key = InlineKeyboardMarkup(
     [
         [
-            InlineKeyboardButton(text="✯ CLOSE ✯", callback_data="close")
+            InlineKeyboardButton(text="❖ 𝐂ʟᴏsє ❖", callback_data="close")
         ]
     ]
 )
@@ -34,10 +34,10 @@ def stream_markup(chat_id):
                 InlineKeyboardButton(text="▢", callback_data=f"ADMIN Stop|{chat_id}"),
             ],
             [
-                InlineKeyboardButton(text="✯ CLONE NOW ✯", url="https://t.me/clone_MUSICrobot")
+                InlineKeyboardButton(text="❖ 𝐂ʟᴏηє 𝐍ᴏᴡ ❖", url="https://t.me/SizzuMusicBot")
             ],
             [
-                InlineKeyboardButton(text="✯ CLOSE ✯", callback_data="close")
+                InlineKeyboardButton(text="❖ 𝐂ʟᴏsє ❖", callback_data="close")
             ]
         ]
     )
