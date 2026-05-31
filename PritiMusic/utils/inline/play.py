@@ -44,39 +44,35 @@ def track_markup(_, videoid, user_id, channel, fplay):
 
 
 def stream_markup_timer(_, chat_id, played, dur):
-played_sec = time_to_seconds(played)
-duration_sec = time_to_seconds(dur)
+    played_sec = time_to_seconds(played)
+    duration_sec = time_to_seconds(dur)
 
-percentage = (played_sec / duration_sec) * 100 if duration_sec else 0
-umm = math.floor(percentage)
+    percentage = (played_sec / duration_sec) * 100 if duration_sec else 0
+    umm = math.floor(percentage)
 
-if 0 < umm <= 10:
-    bar = "𝐈𔘓𝐑▱▱▱▱▱▱▱▱▱"
-elif 10 < umm < 20:
-    bar = "▰𝐈𔘓𝐑▱▱▱▱▱▱▱▱"
-elif 20 <= umm < 30:
-    bar = "▰▰𝐈𔘓𝐑▱▱▱▱▱▱▱"
-elif 30 <= umm < 40:
-    bar = "▰▰▰𝐈𔘓𝐑▱▱▱▱▱▱"
-elif 40 <= umm < 50:
-    bar = "▰▰▰▰𝐈𔘓𝐑▱▱▱▱▱"
-elif 50 <= umm < 60:
-    bar = "▰▰▰▰▰𝐈𔘓𝐑▱▱▱▱"
-elif 60 <= umm < 70:
-    bar = "▰▰▰▰▰▰𝐈𔘓𝐑▱▱▱"
-elif 70 <= umm < 80:
-    bar = "▰▰▰▰▰▰▰𝐈𔘓𝐑▱▱"
-elif 80 <= umm < 95:
-    bar = "▰▰▰▰▰▰▰▰𝐈𔘓𝐑▱"
-else:
-    bar = "▰▰▰▰▰▰▰▰▰𝐈𔘓𝐑 ❖"
+    if 0 < umm <= 10:
+        bar = "𝐈𔘓𝐑▱▱▱▱▱▱▱▱▱"
+    elif 10 < umm < 20:
+        bar = "▰𝐈𔘓𝐑▱▱▱▱▱▱▱▱"
+    elif 20 <= umm < 30:
+        bar = "▰▰𝐈𔘓𝐑▱▱▱▱▱▱▱"
+    elif 30 <= umm < 40:
+        bar = "▰▰▰𝐈𔘓𝐑▱▱▱▱▱▱"
+    elif 40 <= umm < 50:
+        bar = "▰▰▰▰𝐈𔘓𝐑▱▱▱▱▱"
+    elif 50 <= umm < 60:
+        bar = "▰▰▰▰▰𝐈𔘓𝐑▱▱▱▱"
+    elif 60 <= umm < 70:
+        bar = "▰▰▰▰▰▰𝐈𔘓𝐑▱▱▱"
+    elif 70 <= umm < 80:
+        bar = "▰▰▰▰▰▰▰𝐈𔘓𝐑▱▱"
+    elif 80 <= umm < 95:
+        bar = "▰▰▰▰▰▰▰▰𝐈𔘓𝐑▱"
+    else:
+        bar = "▰▰▰▰▰▰▰▰▰𝐈𔘓𝐑 ❖"
 
-# 👇 THIS MUST BE OUTSIDE IF-ELSE BLOCK
-buttons = [
-    [
-        # your buttons here
-    ]
-]
+    buttons = [
+        [
             styled_button(
                 text=f"{played} {bar} {dur}",
                 callback_data="GetTimer",
@@ -95,6 +91,7 @@ buttons = [
             styled_button(text=_["CLOSE_BUTTON"], callback_data="close", style=ButtonStyle.DANGER),
         ]
     ]
+
     return buttons
 
 
