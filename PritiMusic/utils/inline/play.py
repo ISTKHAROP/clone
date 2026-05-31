@@ -11,8 +11,8 @@ from button import styled_button, ButtonStyle
 # Helper for the Clone button
 def clone_button():
     return styled_button(
-        text="✯ CLONE NOW ✯", 
-        url="https://t.me/clone_MUSICrobot",
+        text="❖ 𝐂ʟᴏηє 𝐍ᴏᴡ ❖", 
+        url="https://t.me/SizzuMusicBot",
         style=ButtonStyle.SUCCESS
     )
 
@@ -50,25 +50,25 @@ def stream_markup_timer(_, chat_id, played, dur):
     umm = math.floor(percentage)
 
     if 0 < umm <= 10:
-        bar = "◉—————————"
-    elif 10 < umm < 20:
-        bar = "—◉————————"
-    elif 20 <= umm < 30:
-        bar = "——◉———————"
-    elif 30 <= umm < 40:
-        bar = "———◉——————"
-    elif 40 <= umm < 50:
-        bar = "————◉—————"
-    elif 50 <= umm < 60:
-        bar = "—————◉————"
-    elif 60 <= umm < 70:
-        bar = "——————◉———"
-    elif 70 <= umm < 80:
-        bar = "———————◉——"
-    elif 80 <= umm < 95:
-        bar = "————————◉—"
-    else:
-        bar = "—————————◉"
+    bar = "𝐈𔘓𝐑▱▱▱▱▱▱▱▱▱"
+elif 10 < umm < 20:
+    bar = "▰𝐈𔘓𝐑▱▱▱▱▱▱▱▱"
+elif 20 <= umm < 30:
+    bar = "▰▰𝐈𔘓𝐑▱▱▱▱▱▱▱"
+elif 30 <= umm < 40:
+    bar = "▰▰▰𝐈𔘓𝐑▱▱▱▱▱▱"
+elif 40 <= umm < 50:
+    bar = "▰▰▰▰𝐈𔘓𝐑▱▱▱▱▱"
+elif 50 <= umm < 60:
+    bar = "▰▰▰▰▰𝐈𔘓𝐑▱▱▱▱"
+elif 60 <= umm < 70:
+    bar = "▰▰▰▰▰▰𝐈𔘓𝐑▱▱▱"
+elif 70 <= umm < 80:
+    bar = "▰▰▰▰▰▰▰𝐈𔘓𝐑▱▱"
+elif 80 <= umm < 95:
+    bar = "▰▰▰▰▰▰▰▰𝐈𔘓𝐑▱"
+else:
+    bar = "▰▰▰▰▰▰▰▰▰𝐈𔘓𝐑 ❖"
 
     buttons = [
         [
