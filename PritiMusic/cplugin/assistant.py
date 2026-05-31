@@ -11,8 +11,8 @@ from pyrogram.errors import (
 from PritiMusic.utils.database import clonebotdb
 from config import API_ID, API_HASH, OWNER_ID
 
-POWERED_BY = "\n\n🤞 **𝐏ᴏᴡєʀєᴅ 𝐁ʏ ➛ BETA BOTS.🙂❤️**"
-SESSION_ADVICE = "\n\n💡 **Tip:** You can directly generate your Session String easily and safely from here: @SHIV_SESSION_BOT"
+POWERED_BY = "\n\n🤞 **𝐏ᴏᴡєʀєᴅ 𝐁ʏ ➛ @KavyaBots .🙂❤️**"
+SESSION_ADVICE = "\n\n💡 **Tip:** You can directly generate your Session String easily and safely from here: @SukkuStringsBot"
 
 # ==========================================
 # 1. CONNECT ASSISTANT (Phone + OTP)
