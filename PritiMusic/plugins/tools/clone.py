@@ -52,14 +52,14 @@ CLONE_LIMIT = 500
 FOOTER = (
     "\n\n━━━━━━━━━━━━━━━━━━\n"
     "✨ **Start customizing your bot now! join **\n"
-    "📢 Update: @Betabot_hub\n"
-    "🌚 Support: @Betabot_support"
+    "📢 Update: @KavyaBots\n"
+    "🌚 Support: @IamIstkhar"
 )
 
 try:
     from config import BOT_LINK
 except ImportError:
-    BOT_LINK = "https://t.me/clone_MUSICrobot"
+    BOT_LINK = "https://t.me/SizzuMusicBot"
 
 C_BOT_COMMANDS = [
     {"command": "/clone", "description": "ᴄʟᴏɴᴇs ʏᴏᴜʀ ᴏᴡɴ ᴍᴜsɪᴄ ʙᴏᴛ"},
