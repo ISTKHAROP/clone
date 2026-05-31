@@ -11,8 +11,8 @@ from button import styled_button, ButtonStyle
 # Helper for the Clone button
 def clone_button():
     return styled_button(
-        text="✯ CLONE NOW ✯", 
-        url="https://t.me/clone_MUSICrobot",
+        text="˹ 𝐂ʟᴏηє ˼", 
+        url="https://t.me/SizzuMusicBot",
         style=ButtonStyle.SUCCESS
     )
 
