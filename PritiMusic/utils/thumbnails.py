@@ -120,7 +120,7 @@ async def get_thumb(videoid, user_id, user_name):
         draw.text((650, 470), f"Views: {views}", fill=(150, 150, 150), font=f2)
         draw.text((650, 530), f"Duration: {duration}", fill=(150, 150, 150), font=f2)
 
-        # --- UNIFORM WAVEFORM (New Logic added here) ---
+        # --- UNIFORM WAVEFORM ---
         bar_count = 64; bar_width = 4; bar_gap = 10
         total_width = bar_count * bar_gap
         start_x = (1920 - total_width) / 2; base_y = 780
@@ -139,7 +139,7 @@ async def get_thumb(videoid, user_id, user_name):
         draw.text((start_x, line_y + 20), "00:00", fill="white", font=f_small)
         draw.text((start_x + total_width - 80, line_y + 20), duration, fill="white", font=f_small)
 
-        ctrl_y = line_y + 60; mid_x = 960
+        ctrl_y = line_y + 40; mid_x = 960
         draw.ellipse((mid_x - 30, ctrl_y - 30, mid_x + 30, ctrl_y + 30), outline="white", width=3)
         draw.polygon([(mid_x - 8, ctrl_y - 12), (mid_x + 14, ctrl_y), (mid_x - 8, ctrl_y + 12)], fill="white")
         draw.ellipse((mid_x - 80, ctrl_y - 20, mid_x - 45, ctrl_y + 20), outline="white", width=2)
