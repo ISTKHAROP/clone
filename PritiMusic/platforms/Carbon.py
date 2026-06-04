@@ -1,3 +1,4 @@
+import os
 import random
 from os.path import realpath
 
@@ -78,29 +79,38 @@ class CarbonAPI:
         self.watermark = False
 
     async def generate(self, text: str, user_id):
+        # 1. Ensure cache directory exists to prevent FileNotFoundError
+        if not os.path.exists("cache"):
+            os.makedirs("cache")
+
         async with aiohttp.ClientSession(
             headers={"Content-Type": "application/json"},
         ) as ses:
             params = {
                 "code": text,
+                "backgroundColor": random.choice(colour),
+                "theme": random.choice(themes),
+                "dropShadow": self.drop_shadow,
+                "dropShadowOffsetY": self.drop_shadow_offset,
+                "dropShadowBlurRadius": self.drop_shadow_blur,
+                "fontFamily": self.font_family,
+                "language": self.language,
+                "watermark": self.watermark,
+                "widthAdjustment": self.width_adjustment,
             }
-            params["backgroundColor"] = random.choice(colour)
-            params["theme"] = random.choice(themes)
-            params["dropShadow"] = self.drop_shadow
-            params["dropShadowOffsetY"] = self.drop_shadow_offset
-            params["dropShadowBlurRadius"] = self.drop_shadow_blur
-            params["fontFamily"] = self.font_family
-            params["language"] = self.language
-            params["watermark"] = self.watermark
-            params["widthAdjustment"] = self.width_adjustment
             try:
                 request = await ses.post(
                     "https://carbonara.solopov.dev/api/cook",
                     json=params,
                 )
             except client_exceptions.ClientConnectorError:
-                raise UnableToFetchCarbon("Can not reach the Host!")
+                raise UnableToFetchCarbon("Cannot reach the Host!")
+            
             resp = await request.read()
-            with open(f"cache/carbon{user_id}.jpg", "wb") as f:
+            
+            # 2. Changed extension to .png because Carbon API returns PNG by default
+            filepath = f"cache/carbon{user_id}.png"
+            with open(filepath, "wb") as f:
                 f.write(resp)
+                
             return realpath(f.name)
