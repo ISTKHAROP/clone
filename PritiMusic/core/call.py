@@ -183,7 +183,6 @@ class Call(PyTgCalls):
         else:
             out = file_path
         
-        # ✅ FIX: Use get_running_loop() for newer Python versions
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
@@ -397,48 +396,78 @@ class Call(PyTgCalls):
             if not check:
                 from PritiMusic.utils.database.autoplay import is_autoplay_group
                 
-                # Check karo autoplay on hai ya nahi
                 auto_on = await is_autoplay_group(chat_id)
                 if auto_on and popped:
                     try:
                         from youtubesearchpython.__future__ import VideosSearch
                         import random
+                        import re # Regex for title cleaning
                         
-                        # ✅ FIX 1: Safe Title Extraction to avoid NoneType Error
                         raw_title = popped.get("title")
-                        last_title = str(raw_title) if raw_title else "New trending songs"
+                        if not raw_title or str(raw_title) == "None":
+                            last_title = "Trending hits"
+                            clean_title = "Trending hits"
+                        else:
+                            clean_title = re.split(r'\||-', str(raw_title))[0].strip()
+                            last_title = clean_title[:20] 
                         
-                        # ✅ FIX 2: Force YouTube search to find only audio/songs
-                        search_query = f"{last_title} official audio"
-                        search = VideosSearch(search_query, limit=15)
+                        keywords = ["similar songs", "jukebox", "audio hits", "related tracks", "music mix"]
+                        search_query = f"{last_title} {random.choice(keywords)}"
+                        
+                        search = VideosSearch(search_query, limit=20)
                         result = await search.next()
                         
-                        if result and "result" in result:
-                            last_vidid = popped.get("vidid")
-                            # Pichla gaana repeat na ho isliye use hata do
-                            choices = [res for res in result["result"] if res["id"] != last_vidid]
+                        if result and "result" in result and len(result["result"]) > 0:
+                            last_vidid = str(popped.get("vidid", ""))
                             
-                            if choices:
-                                # Baki bache gaano mein se koi ek random select karo
-                                next_track = random.choice(choices)
-                                next_vidid = next_track["id"]
+                            valid_choices = []
+                            for res in result["result"]:
+                                res_id = str(res.get("id"))
+                                res_title = str(res.get("title", "")).lower()
+                                res_dur = str(res.get("duration", "None"))
                                 
-                                # Chupchap queue (database) mein naya gaana daal do
+                                # 1. Live streams aur invalid durations ko hatao
+                                if res_dur == "None" or res_dur == "Live" or "live" in res_title or "24/7" in res_title:
+                                    continue
+                                    
+                                # 2. Exact wahi video ID dobara play nahi hogi
+                                if res_id == last_vidid:
+                                    continue
+                                    
+                                # 3. Agar pichle gaane ka naam naye gaane ke title mein hai,
+                                # toh usko seedha reject kar do (Yeh Remix/Lyrical versions ko rok dega)
+                                if clean_title.lower() in res_title:
+                                    continue
+                                    
+                                valid_choices.append(res)
+                            
+                            if valid_choices:
+                                # Filtered valid choices mein se completely random song uthao
+                                next_track = random.choice(valid_choices)
+                                next_vidid = str(next_track.get("id"))
+                                next_title = str(next_track.get("title", "Unknown Title"))
+                                next_dur = str(next_track.get("duration", "Unknown"))
+                                
                                 db[chat_id].append({
                                     "vidid": next_vidid,
-                                    "title": next_track["title"],
+                                    "title": next_title,
                                     "by": "Autoplay 🟢",
                                     "chat_id": chat_id,
                                     "file": f"vid_{next_vidid}",
-                                    # ✅ FIX 3: Always force streamtype to "audio" for autoplay
-                                    "streamtype": "audio", 
-                                    "user_id": app.id if app else 0,
+                                    "streamtype": "audio", # Force Audio
+                                    "user_id": 0,          
                                     "seconds": 0, 
-                                    "dur": next_track.get("duration", "Unknown"),
-                                    "old_dur": next_track.get("duration", "Unknown"),
+                                    "dur": next_dur,
+                                    "old_dur": next_dur,
                                     "old_second": 0,
                                     "client": popped.get("client")
                                 })
+                                
+                                try:
+                                    from PritiMusic.utils.logger import autoplay_log
+                                    await autoplay_log(app, chat_id, next_title)
+                                except Exception:
+                                    pass
                     except Exception as e:
                         LOGGER(__name__).error(f"Autoplay Error: {e}")
 
@@ -461,9 +490,14 @@ class Call(PyTgCalls):
             queued = check[0]["file"]
             language = await get_lang(chat_id)
             _ = get_string(language)
-            title = (check[0]["title"]).title()
-            user = check[0]["by"]
-            user_id = check[0].get("user_id", 0) # Safely fetch user_id for get_thumb
+            
+            raw_title = check[0].get("title")
+            title = str(raw_title).title() if raw_title else "Unknown Title"
+            
+            raw_user = check[0].get("by")
+            user = str(raw_user) if raw_user else "Unknown User"
+            
+            user_id = check[0].get("user_id", 0) 
             original_chat_id = check[0]["chat_id"]
             streamtype = check[0]["streamtype"]
             videoid = check[0]["vidid"]
@@ -507,7 +541,6 @@ class Call(PyTgCalls):
                     )
                 button = telegram_markup(_, chat_id)
                 
-                # ✅ Safe Random Image
                 img = get_random_img(config.STREAM_IMG_URL)
                 
                 run = await chat_client.send_photo(
@@ -520,7 +553,7 @@ class Call(PyTgCalls):
                         user,
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
-                    has_spoiler=False # Spoiler Disabled
+                    has_spoiler=False 
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "tg"
@@ -547,7 +580,6 @@ class Call(PyTgCalls):
                             _["call_6"], disable_web_page_preview=True
                         )
                 
-                # ✅ FIX: CRITICAL AUTO-SKIP CRASH PREVENTION
                 if not file_path or str(file_path) == "None":
                     await mystic.edit_text("❌ **Error:** yt-dlp failed to download the next track. Skipping...")
                     return await self.change_stream(client, chat_id)
@@ -571,10 +603,8 @@ class Call(PyTgCalls):
                         text=_["call_6"],
                     )
                 
-                # ✅ FIX: Pass all required arguments to get_thumb
                 img = await get_thumb(videoid, user_id, chat_client)
                 
-                # Fallback to random playlist image if thumb fails
                 if not img: img = get_random_img(config.PLAYLIST_IMG_URL)
 
                 button = stream_markup(_, chat_id)
@@ -589,7 +619,7 @@ class Call(PyTgCalls):
                         user,
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
-                    has_spoiler=False # Spoiler Disabled
+                    has_spoiler=False
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "stream"
@@ -617,7 +647,7 @@ class Call(PyTgCalls):
                     photo=get_random_img(config.STREAM_IMG_URL),
                     caption=_["stream_2"].format(user),
                     reply_markup=InlineKeyboardMarkup(button),
-                    has_spoiler=False # Spoiler Disabled
+                    has_spoiler=False
                 )
                 db[chat_id][0]["mystic"] = run
                 db[chat_id][0]["markup"] = "tg"
@@ -653,7 +683,7 @@ class Call(PyTgCalls):
                             config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
                         ),
                         reply_markup=InlineKeyboardMarkup(button),
-                        has_spoiler=False # Spoiler Disabled
+                        has_spoiler=False 
                     )
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "tg"
@@ -667,13 +697,12 @@ class Call(PyTgCalls):
                             config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
                         ),
                         reply_markup=InlineKeyboardMarkup(button),
-                        has_spoiler=False # Spoiler Disabled
+                        has_spoiler=False 
                     )
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "tg"
                     
                 else:
-                    # ✅ FIX: Pass all required arguments to get_thumb
                     img = await get_thumb(videoid, user_id, chat_client)
                     if not img: img = get_random_img(config.PLAYLIST_IMG_URL)
 
@@ -688,7 +717,7 @@ class Call(PyTgCalls):
                             user,
                         ),
                         reply_markup=InlineKeyboardMarkup(button),
-                        has_spoiler=False # Spoiler Disabled
+                        has_spoiler=False 
                     )
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "stream"
