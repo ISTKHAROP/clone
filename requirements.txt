@@ -10,7 +10,7 @@ ffmpeg-python
 gitpython
 hachoir
 heroku3
-httpx
+httpx==0.23.3
 motor
 numpy
 opencv-python-headless
@@ -31,5 +31,4 @@ telegraph
 unidecode
 youtube-search
 youtube-search-python
-py-yt-search
 yt-dlp>=2024.0.0
