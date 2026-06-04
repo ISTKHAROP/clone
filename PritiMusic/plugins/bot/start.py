@@ -4,7 +4,8 @@ import asyncio
 from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction
 from pyrogram.types import InlineKeyboardMarkup, Message
-from py_yt import VideosSearch
+# 👇 Nayi library yahan update kar di gayi hai
+from youtubesearchpython.__future__ import VideosSearch
 
 import config
 from PritiMusic import app
