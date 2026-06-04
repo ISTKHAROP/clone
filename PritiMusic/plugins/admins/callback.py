@@ -1,7 +1,9 @@
 import asyncio
 import random
-from pyrogram.types import CallbackQuery, InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
+import math
+from pyrogram.types import CallbackQuery, InputMediaPhoto, InputMediaVideo, InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram import filters
+from pyrogram.errors import WebpageMediaEmpty
 
 from PritiMusic import YouTube, app
 from PritiMusic.core.call import Lucky
@@ -10,6 +12,9 @@ from PritiMusic.utils.database import (
     get_active_chats, get_lang, get_upvote_count, is_active_chat,
     is_music_playing, is_nonadmin_chat, music_off, music_on, set_loop, get_assistant
 )
+# ✅ Added Autoplay database imports
+from PritiMusic.utils.database.autoplay import is_autoplay_group, add_autoplay_group, remove_autoplay_group
+
 from PritiMusic.utils.decorators.language import languageCB
 from PritiMusic.utils.formatters import seconds_to_min
 from PritiMusic.utils.inline import close_markup, stream_markup, stream_markup_timer
@@ -74,7 +79,7 @@ async def clone_page_cb(client, CallbackQuery, _):
         )
     )
 
-# --- SUPPORT PAGE (UPDATED WITH YOUR LINKS) ---
+# --- SUPPORT PAGE ---
 @app.on_callback_query(filters.regex("support_page") & ~BANNED_USERS)
 @languageCB
 async def support_page_cb(client, CallbackQuery, _):
@@ -85,7 +90,6 @@ async def support_page_cb(client, CallbackQuery, _):
         "ᴊᴏɪɴ ᴏᴜʀ sᴜᴘᴘᴏʀᴛ ᴄʜᴀᴛ ᴏʀ ᴄʜᴀɴɴᴇʟ ʙᴇʟᴏᴡ."
     )
     
-    # यहाँ आपके दिए गए लिंक्स के साथ नए बटन्स डिज़ाइन किए गए हैं
     custom_support_buttons = [
         [
             InlineKeyboardButton(text="📢 ᴜᴘᴅᴀᴛᴇs", url="https://t.me/betabot_hub"),
@@ -96,7 +100,7 @@ async def support_page_cb(client, CallbackQuery, _):
         ]
     ]
 
-    await CallbackQuery.edit_message_media(
+await CallbackQuery.edit_message_media(
         media=InputMediaPhoto(
             media="https://files.catbox.moe/10zwqs.jpg", 
             caption=support_text
@@ -104,23 +108,28 @@ async def support_page_cb(client, CallbackQuery, _):
         reply_markup=InlineKeyboardMarkup(custom_support_buttons)
     )
 
-# --- SOURCE PAGE ---
+# --- SOURCE PAGE (UPDATED TO PHOTO) ---
 @app.on_callback_query(filters.regex("gib_source"))
 async def gib_repo_callback(_, callback_query):
-    await callback_query.edit_message_media(
-        media=InputMediaPhoto(
-            media="https://files.catbox.moe/10zwqs.jpg",
-            caption="ᴘʜᴇʟᴀ ᴅᴇᴠɪʟ ᴋᴏ ᴘᴀᴘᴀ ʙᴏʟᴏ ᴄʜᴀʟ ʙᴏʟ😎"
-        ),
-        reply_markup=InlineKeyboardMarkup(
-            [
+    try:
+        image_url = "https://files.catbox.moe/10zwqs.jpg"
+        
+        await callback_query.edit_message_media(
+            media=InputMediaPhoto(
+                media=image_url, 
+                caption="REPO = ||ᴘʜᴇʟᴀ ᴅᴇᴠɪʟ ᴋᴏ ᴘᴀᴘᴀ ʙᴏʟ ᴄʜᴀʟ ʙᴏʟ😎||"
+            ),
+            reply_markup=InlineKeyboardMarkup(
                 [
-                    InlineKeyboardButton(text="• ʙᴀᴄᴋ •", callback_data="settingsback_helper"),
-                    InlineKeyboardButton(text="• ᴄʟᴏsᴇ •", callback_data="close")
+                    [
+                        InlineKeyboardButton(text="• ʙᴀᴄᴋ •", callback_data="settingsback_helper"),
+                        InlineKeyboardButton(text="• ᴄʟᴏsᴇ •", callback_data="close")
+                    ]
                 ]
-            ]
-        ),
-    )
+            ),
+        )
+    except Exception as e:
+        await callback_query.answer(f"Error: {str(e)}", show_alert=True)
 
 @app.on_callback_query(filters.regex("unban_assistant"))
 async def unban_assistant(_, callback: CallbackQuery):
@@ -217,8 +226,30 @@ async def del_back_playlist(client, CallbackQuery, _):
         await set_loop(chat_id, 0)
         await CallbackQuery.message.reply_text(_["admin_5"].format(mention), reply_markup=close_markup(_))
         await CallbackQuery.message.delete()
+
+    # ✅ AUTOPLAY BUTTON LOGIC ADDED HERE
+    elif command == "Autoplay":
+        state = await is_autoplay_group(chat_id)
+        if state:
+            await remove_autoplay_group(chat_id)
+            await CallbackQuery.answer("🔴 Autoplay Disabled!", show_alert=True)
+            await CallbackQuery.message.reply_text(
+                f"**🎧 𝐀𝐮𝐭𝐨𝐩𝐥𝐚𝐲 𝐒𝐲𝐬𝐭𝐞𝐦**\n\nGroup ke liye autoplay status ab **Disabled 🔴** hai.\n└ ʙʏ : {mention}", 
+                reply_markup=close_markup(_)
+            )
+        else:
+            await add_autoplay_group(chat_id)
+            await CallbackQuery.answer("🟢 Autoplay Enabled!", show_alert=True)
+            await CallbackQuery.message.reply_text(
+                f"**🎧 𝐀𝐮𝐭𝐨𝐩𝐥𝐚𝐲 𝐒𝐲𝐬𝐭𝐞𝐦**\n\nGroup ke liye autoplay status ab **Enabled 🟢** hai.\n└ ʙʏ : {mention}", 
+                reply_markup=close_markup(_)
+            )
+            
     elif command == "Skip" or command == "Replay":
         check = db.get(chat_id)
+        if not check or len(check) == 0:
+            return await CallbackQuery.answer("Queue khali hai ya list clear ho chuki hai!", show_alert=True)
+            
         if command == "Skip":
             txt = f"➻ sᴛʀᴇᴀᴍ sᴋɪᴩᴩᴇᴅ 🎄\n│ \n└ʙʏ : {mention} 🥀"
             try:
@@ -261,14 +292,15 @@ async def del_back_playlist(client, CallbackQuery, _):
             return await CallbackQuery.message.reply_text(_["call_6"])
 
         button = stream_markup(_, chat_id)
-        img = await get_thumb(videoid)
+        img = await get_thumb(videoid, CallbackQuery.from_user.id, client)
         run = await CallbackQuery.message.reply_photo(
             photo=img if img else STREAM_IMG_URL,
             caption=_["stream_1"].format(f"https://t.me/{app.username}?start=info_{videoid}", title[:23], duration, user),
             reply_markup=InlineKeyboardMarkup(button),
         )
-        db[chat_id][0]["mystic"] = run
-        db[chat_id][0]["markup"] = "tg"
+        if chat_id in db and len(db[chat_id]) > 0:
+            db[chat_id][0]["mystic"] = run
+            db[chat_id][0]["markup"] = "tg"
         await CallbackQuery.edit_message_text(txt, reply_markup=close_markup(_))
 
 async def markup_timer():
@@ -295,4 +327,10 @@ async def markup_timer():
                 except: continue
             except: continue
 
-asyncio.create_task(markup_timer())
+asyncio.create_task(markup_timer()) 
+
+# --- YAHAN SE FILE ID NIKALNE WALA CODE START HOTA HAI ---
+@app.on_message(filters.video & filters.private)
+async def get_my_own_file_id(client, message):
+    await message.reply_text(f"**Mera Video File ID (Isko Copy Karo):**\n`{message.video.file_id}`")
+# --- YAHAN KHATAM ---
